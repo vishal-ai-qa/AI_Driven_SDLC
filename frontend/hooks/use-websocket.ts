@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-export function useWebSocket(url: string | null, onMessage: (data: unknown) => void) {
+export function useWebSocket<T = unknown>(url: string | null, onMessage: (data: T) => void) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {

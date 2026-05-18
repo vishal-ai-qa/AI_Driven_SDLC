@@ -91,7 +91,7 @@ function EditModal({
           </div>
 
           {/* Clarification section for low-confidence items */}
-          {(req.needs_clarification || req.ambiguities?.length > 0) && (
+          {(req.needs_clarification || (req.ambiguities?.length ?? 0) > 0) && (
             <div className="border border-yellow-800/50 rounded-xl p-4 bg-yellow-900/10 space-y-3">
               <p className="text-sm font-semibold text-yellow-400 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
@@ -413,7 +413,7 @@ export default function RequirementsPage() {
                       <p className="text-sm text-muted-foreground mt-4">{req.description}</p>
                     )}
                     <div className="grid grid-cols-2 gap-4">
-                      {req.assumptions?.length > 0 && (
+                      {(req.assumptions?.length ?? 0) > 0 && (
                         <div>
                           <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Assumptions</p>
                           <ul className="space-y-0.5">
@@ -423,7 +423,7 @@ export default function RequirementsPage() {
                           </ul>
                         </div>
                       )}
-                      {req.risks?.length > 0 && (
+                      {(req.risks?.length ?? 0) > 0 && (
                         <div>
                           <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Risks</p>
                           <ul className="space-y-0.5">
@@ -434,7 +434,7 @@ export default function RequirementsPage() {
                         </div>
                       )}
                     </div>
-                    {req.ambiguities?.length > 0 && (
+                    {(req.ambiguities?.length ?? 0) > 0 && (
                       <div className="border border-yellow-800/40 rounded-lg p-3 bg-yellow-900/10">
                         <p className="text-xs font-semibold text-yellow-400 mb-1">Ambiguities — click Edit to resolve</p>
                         {req.ambiguities.map((a, i) => (

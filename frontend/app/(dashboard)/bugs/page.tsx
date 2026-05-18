@@ -126,7 +126,7 @@ export default function BugsPage() {
                       </div>
                     </div>
 
-                    {bug.steps_to_reproduce?.length > 0 && (
+                    {(bug.steps_to_reproduce?.length ?? 0) > 0 && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Steps to Reproduce</p>
                         <ol className="space-y-1">
@@ -156,7 +156,7 @@ export default function BugsPage() {
                       </div>
                     )}
 
-                    {bug.console_logs?.length > 0 && (
+                    {(bug.console_logs?.length ?? 0) > 0 && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Console Errors</p>
                         <div className="bg-black/40 rounded p-2 space-y-1 max-h-40 overflow-y-auto">
@@ -167,7 +167,7 @@ export default function BugsPage() {
                       </div>
                     )}
 
-                    {bug.screenshots?.length > 0 && (
+                    {(bug.screenshots?.length ?? 0) > 0 && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Screenshots</p>
                         <div className="flex gap-2 flex-wrap">

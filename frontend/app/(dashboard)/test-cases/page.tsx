@@ -289,7 +289,7 @@ export default function TestCasesPage() {
                       </div>
                     )}
 
-                    {tc.preconditions?.length > 0 && (
+                    {(tc.preconditions?.length ?? 0) > 0 && (
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">
                           Preconditions
@@ -305,7 +305,7 @@ export default function TestCasesPage() {
                       </div>
                     )}
 
-                    {tc.test_steps?.length > 0 && (
+                    {(tc.test_steps?.length ?? 0) > 0 && (
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">
                           Test Steps
@@ -352,7 +352,7 @@ export default function TestCasesPage() {
                       <span>Created: {formatDate(tc.created_at)}</span>
                     </div>
 
-                    {tc.tags?.length > 0 && (
+                    {(tc.tags?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {tc.tags.map((tag) => (
                           <span

@@ -16,7 +16,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [user, router]);
 
   // Subscribe to agent events for active project
-  useWebSocket(
+  useWebSocket<{
+    event: string; agent: string; phase: string; status: string;
+    summary: string; tokens: number; timestamp: string;
+  }>(
     activeProjectId ? `${process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"}/ws/project/${activeProjectId}` : null,
     (data) => {
       if (data.event === "agent_log") {

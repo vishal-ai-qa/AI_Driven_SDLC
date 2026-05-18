@@ -218,7 +218,7 @@ export default function StoriesPage() {
                       </div>
                     )}
 
-                    {story.acceptance_criteria?.length > 0 && (
+                    {(story.acceptance_criteria?.length ?? 0) > 0 && (
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">
                           Acceptance Criteria

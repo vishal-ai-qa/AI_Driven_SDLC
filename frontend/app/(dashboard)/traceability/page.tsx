@@ -17,7 +17,7 @@ interface TraceNode {
 
 function TreeNode({ node, depth = 0 }: { node: TraceNode; depth?: number }) {
   const [open, setOpen] = useState(depth < 2);
-  const hasChildren = node.children?.length > 0;
+  const hasChildren = (node.children?.length ?? 0) > 0;
 
   const typeColors: Record<string, string> = {
     requirement: "text-blue-400",
@@ -100,7 +100,7 @@ export default function TraceabilityPage() {
                 style={{ width: `${data.coverage_percentage}%` }}
               />
             </div>
-            {data.uncovered_requirements?.length > 0 && (
+            {(data.uncovered_requirements?.length ?? 0) > 0 && (
               <p className="text-xs text-red-400 mt-2">
                 Uncovered: {data.uncovered_requirements.join(", ")}
               </p>
