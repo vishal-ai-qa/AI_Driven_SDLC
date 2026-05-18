@@ -1,0 +1,176 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL with pgvector ───────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: qagent_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-qagent}
+      POSTGRES_USER: ${POSTGRES_USER:-qagent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qagent_secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qagent}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis (queue + cache) ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: qagent_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ─── FastAPI Backend ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qagent_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-qagent}:${POSTGRES_PASSWORD:-qagent_secret}@postgres:5432/${POSTGRES_DB:-qagent}
+      REDIS_URL: redis://redis:6379/0
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SECRET_KEY: ${SECRET_KEY:-super_secret_dev_key_change_in_prod}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    volumes:
+      - ./backend:/app
+      - uploads_data:/app/uploads
+      - reports_data:/app/reports
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ─── Celery Worker ───────────────────────────────────────────────────────────
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qagent_worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-qagent}:${POSTGRES_PASSWORD:-qagent_secret}@postgres:5432/${POSTGRES_DB:-qagent}
+      REDIS_URL: redis://redis:6379/0
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SECRET_KEY: ${SECRET_KEY:-super_secret_dev_key_change_in_prod}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    volumes:
+      - ./backend:/app
+      - uploads_data:/app/uploads
+      - reports_data:/app/reports
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=4
+
+  # ─── Celery Beat (scheduler) ─────────────────────────────────────────────────
+  beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qagent_beat
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-qagent}:${POSTGRES_PASSWORD:-qagent_secret}@postgres:5432/${POSTGRES_DB:-qagent}
+      REDIS_URL: redis://redis:6379/0
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+      - postgres
+    command: celery -A app.workers.celery_app beat --loglevel=info
+
+  # ─── Next.js Frontend ────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: qagent_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8000}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    command: npm run dev
+
+  # ─── Playwright execution container ──────────────────────────────────────────
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.44.0-jammy
+    container_name: qagent_playwright
+    restart: "no"
+    environment:
+      BASE_URL: ${TEST_BASE_URL:-http://frontend:3000}
+      API_URL: http://backend:8000
+    volumes:
+      - ./automation:/automation
+      - playwright_results:/automation/test-results
+    working_dir: /automation
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - testing
+
+  # ─── Flower (Celery monitoring) ───────────────────────────────────────────────
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qagent_flower
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      FLOWER_BASIC_AUTH: "${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-changeme}"
+    depends_on:
+      - redis
+    command: celery -A app.workers.celery_app flower --port=5555 --basic_auth=${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-changeme}
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+  reports_data:
+  playwright_results:
+
+networks:
+  default:
+    name: qagent_network

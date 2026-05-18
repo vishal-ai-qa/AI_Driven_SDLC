@@ -1,14 +1,56 @@
-# OS files
+# ─── OS / Editor ──────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Logs / temp
+# ─── Secrets — NEVER commit real .env files ───────────────────────────────────
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+*.so
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# ─── Node / Next.js ───────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.turbo/
+
+# ─── Uploads / reports (runtime data) ────────────────────────────────────────
+uploads/
+reports/
 *.log
 *.tmp
+
+# ─── Claude Code session data ─────────────────────────────────────────────────
+.claude/
+
+# ─── Docker volumes / local overrides ────────────────────────────────────────
+docker-compose.override.yml
+postgres_data/
+redis_data/
