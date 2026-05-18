@@ -156,7 +156,7 @@ export default function BugsPage() {
                       </div>
                     )}
 
-                    {(bug.console_logs?.length ?? 0) > 0 && (
+                    {bug.console_logs && bug.console_logs.length > 0 && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Console Errors</p>
                         <div className="bg-black/40 rounded p-2 space-y-1 max-h-40 overflow-y-auto">
@@ -167,7 +167,7 @@ export default function BugsPage() {
                       </div>
                     )}
 
-                    {(bug.screenshots?.length ?? 0) > 0 && (
+                    {bug.screenshots && bug.screenshots.length > 0 && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Screenshots</p>
                         <div className="flex gap-2 flex-wrap">
