@@ -75,11 +75,15 @@ async def setup_db():
 
 @pytest_asyncio.fixture
 async def client(setup_db):
-    # Each HTTP request gets its own fresh session — avoids asyncpg concurrency errors
-    # that occur when a single session is shared across multiple requests.
+    # Mirror production get_db: commit on success, rollback on exception.
     async def override_get_db():
         async with TestSessionLocal() as session:
-            yield session
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
 
     app.dependency_overrides[get_db] = override_get_db
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
