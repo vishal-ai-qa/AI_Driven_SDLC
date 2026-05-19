@@ -49,13 +49,17 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.pool import NullPool
 
 from app.main import app
 from app.database import Base, get_db
 
 TEST_DATABASE_URL = "postgresql+asyncpg://qagent:test_secret@localhost:5432/qagent_test"
 
-test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+# NullPool: each connection is independent, not reused across event loops.
+# Prevents "Future attached to a different loop" when each test function gets
+# its own asyncio event loop (pytest-asyncio asyncio_mode=auto default).
+test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
 TestSessionLocal = async_sessionmaker(test_engine, expire_on_commit=False)
 
 
