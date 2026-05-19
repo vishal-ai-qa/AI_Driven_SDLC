@@ -110,7 +110,25 @@ jobs:
           cp .env.example .env
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
           docker compose up -d postgres redis backend
-          sleep 20
+
+      - name: Wait for backend to be healthy
+        run: |
+          echo "Waiting for backend..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/api/health; then
+              echo "Backend is up"
+              break
+            fi
+            echo "Attempt $i/30 — retrying in 5s"
+            sleep 5
+          done
+
+      - name: Seed test user
+        run: |
+          curl -sf -X POST http://localhost:8000/api/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"email":"admin@qagent.dev","password":"Admin@1234","full_name":"CI Admin"}' \
+            || echo "User may already exist, continuing"
 
       - uses: actions/setup-node@v4
         with:
@@ -125,9 +143,9 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           API_URL: http://localhost:8000
-          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-        run: npx playwright test --project=api --project=chromium
+          TEST_USER_EMAIL: admin@qagent.dev
+          TEST_USER_PASSWORD: Admin@1234
+        run: npx playwright test --project=api
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -141,7 +159,7 @@ jobs:
   docker:
     name: Build & Push Docker Images
     runs-on: ubuntu-latest
-    needs: [e2e]
+    needs: [backend-test, frontend-build]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read

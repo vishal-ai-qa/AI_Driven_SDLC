@@ -18,11 +18,11 @@ flower==2.0.1
 # ─── AI / LLM ──────────────────────────────────────────────────────────────────
 anthropic==0.29.0
 openai==1.35.0
-langchain==0.2.5
-langchain-anthropic==0.1.15
-langchain-openai==0.1.8
-langchain-community==0.2.5
-langgraph==0.1.9
+langchain==0.2.16
+langchain-anthropic==0.1.23
+langchain-openai==0.1.25
+langchain-community==0.2.19
+langgraph>=0.2.0,<0.3.0
 tiktoken==0.7.0
 
 # ─── Vector / Embeddings ───────────────────────────────────────────────────────
@@ -38,6 +38,7 @@ pytesseract==0.3.10
 # ─── Auth / Security ───────────────────────────────────────────────────────────
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==3.2.2
 cryptography==42.0.8
 
 # ─── Browser Automation ────────────────────────────────────────────────────────
