@@ -206,6 +206,14 @@ jobs:
           path: automation/playwright-report/
           retention-days: 30
 
+      - name: Upload uvicorn log
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: uvicorn-log
+          path: /tmp/uvicorn.log
+          retention-days: 1
+
   # ─── Docker Build & Push ─────────────────────────────────────────────────────
   docker:
     name: Build & Push Docker Images
