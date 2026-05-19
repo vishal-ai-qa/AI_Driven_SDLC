@@ -102,18 +102,56 @@ jobs:
     needs: [backend-test, frontend-build]
     if: github.event_name == 'push'
 
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: qagent
+          POSTGRES_USER: qagent
+          POSTGRES_PASSWORD: qagent_secret
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Start services with docker-compose
-        run: |
-          cp .env.example .env
-          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
-          docker compose up -d postgres redis backend
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-test.txt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -r requirements-test.txt
+
+      - name: Start backend server
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://qagent:qagent_secret@localhost:5432/qagent
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: e2e_test_secret_key_for_ci_only
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ENVIRONMENT: development
+          CORS_ORIGINS: http://localhost:3000
+        run: python start_ci.py &
 
       - name: Wait for backend to be healthy
         run: |
-          echo "Waiting for backend..."
           for i in $(seq 1 30); do
             if curl -sf http://localhost:8000/api/health; then
               echo "Backend is up"
@@ -180,11 +218,11 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/qagent-backend:latest
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/qagent-frontend:latest
