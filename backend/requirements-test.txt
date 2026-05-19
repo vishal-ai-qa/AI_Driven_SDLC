@@ -1,8 +1,9 @@
-# CI test requirements — excludes only packages with heavy system deps:
-#   weasyprint  (needs Cairo/Pango/GDK system libs)
-#   playwright  (needs browser binary install)
-#   sentence-transformers (downloads large model weights)
-#   pytesseract (needs tesseract binary)
+# CI test requirements — heavy packages are mocked in conftest.py
+# Excludes: anthropic, langchain*, langgraph, openai, tiktoken (mocked)
+#           weasyprint  (needs Cairo/Pango/GDK system libs)
+#           playwright  (needs browser binary install)
+#           sentence-transformers (downloads large model weights)
+#           pytesseract (needs tesseract binary)
 
 # ─── Web Framework ──────────────────────────────────────────────────────────
 fastapi==0.111.0
@@ -16,19 +17,9 @@ asyncpg==0.29.0
 alembic==1.13.1
 pgvector==0.3.0
 
-# ─── Queue ──────────────────────────────────────────────────────────────────
+# ─── Queue (mocked in tests, but celery is imported by app) ─────────────────
 celery[redis]==5.4.0
 redis==5.0.4
-
-# ─── AI / LLM ───────────────────────────────────────────────────────────────
-anthropic==0.29.0
-openai==1.35.0
-langchain==0.2.5
-langchain-anthropic==0.1.15
-langchain-openai==0.1.8
-langchain-community==0.2.5
-langgraph==0.1.9
-tiktoken==0.7.0
 
 # ─── Document Parsing (no system deps) ─────────────────────────────────────
 pypdf2==3.0.1
