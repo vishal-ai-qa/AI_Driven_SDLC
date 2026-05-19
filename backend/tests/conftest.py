@@ -3,7 +3,6 @@ pytest configuration — mocks heavy AI/browser deps before importing the app
 so CI only needs the lean requirements-test.txt (no langchain/playwright/etc).
 """
 import sys
-import asyncio
 from unittest.mock import MagicMock, AsyncMock
 
 # ── Mock heavy packages before any app import ────────────────────────────────
@@ -58,13 +57,6 @@ TEST_DATABASE_URL = "postgresql+asyncpg://qagent:test_secret@localhost:5432/qage
 
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestSessionLocal = async_sessionmaker(test_engine, expire_on_commit=False)
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest_asyncio.fixture(scope="session")
