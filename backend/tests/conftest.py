@@ -48,7 +48,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from app.main import app
 from app.database import Base, get_db
@@ -70,16 +70,12 @@ async def setup_db():
 
 
 @pytest_asyncio.fixture
-async def db_session(setup_db):
-    async with TestSessionLocal() as session:
-        yield session
-        await session.rollback()
-
-
-@pytest_asyncio.fixture
-async def client(db_session):
+async def client(setup_db):
+    # Each HTTP request gets its own fresh session — avoids asyncpg concurrency errors
+    # that occur when a single session is shared across multiple requests.
     async def override_get_db():
-        yield db_session
+        async with TestSessionLocal() as session:
+            yield session
 
     app.dependency_overrides[get_db] = override_get_db
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
