@@ -146,8 +146,6 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: e2e_test_secret_key_for_ci_only
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ENVIRONMENT: development
-          CORS_ORIGINS: http://localhost:3000
         run: python start_ci.py > /tmp/uvicorn.log 2>&1 &
 
       - name: Wait for backend to be healthy
@@ -163,7 +161,10 @@ jobs:
             sleep 5
           done
           if [ "$BACKEND_UP" = "false" ]; then
-            echo "=== uvicorn startup log ==="
+            echo "## Uvicorn startup log" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat /tmp/uvicorn.log >> $GITHUB_STEP_SUMMARY || echo "(no log found)" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
             cat /tmp/uvicorn.log || echo "(no log found)"
             echo "ERROR: backend did not start within 150s"
             exit 1
