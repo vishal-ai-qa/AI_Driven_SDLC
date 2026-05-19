@@ -165,7 +165,7 @@ jobs:
         run: |
           curl -sf -X POST http://localhost:8000/api/auth/register \
             -H "Content-Type: application/json" \
-            -d '{"email":"admin@qagent.dev","password":"Admin@1234","full_name":"CI Admin"}' \
+            -d '{"email":"admin@qagent.dev","password":"Admin@1234","full_name":"CI Admin","username":"ci_admin"}' \
             || echo "User may already exist, continuing"
 
       - uses: actions/setup-node@v4
