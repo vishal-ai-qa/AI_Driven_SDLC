@@ -9,7 +9,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from python_slugify import slugify
+from slugify import slugify
 
 from app.database import get_db, AsyncSessionLocal
 from app.models.database import (
