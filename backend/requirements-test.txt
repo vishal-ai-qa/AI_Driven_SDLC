@@ -1,35 +1,68 @@
-# Lean requirements for CI test runs — excludes heavy system-dep packages
-# (weasyprint needs Cairo/Pango, playwright needs browser binaries,
-#  sentence-transformers downloads large model weights)
+# CI test requirements — excludes only packages with heavy system deps:
+#   weasyprint  (needs Cairo/Pango/GDK system libs)
+#   playwright  (needs browser binary install)
+#   sentence-transformers (downloads large model weights)
+#   pytesseract (needs tesseract binary)
 
+# ─── Web Framework ──────────────────────────────────────────────────────────
 fastapi==0.111.0
 uvicorn[standard]==0.30.1
 python-multipart==0.0.9
 websockets==12.0
 
+# ─── Database ───────────────────────────────────────────────────────────────
 sqlalchemy[asyncio]==2.0.30
 asyncpg==0.29.0
 alembic==1.13.1
 pgvector==0.3.0
 
+# ─── Queue ──────────────────────────────────────────────────────────────────
+celery[redis]==5.4.0
+redis==5.0.4
+
+# ─── AI / LLM ───────────────────────────────────────────────────────────────
+anthropic==0.29.0
+openai==1.35.0
+langchain==0.2.5
+langchain-anthropic==0.1.15
+langchain-openai==0.1.8
+langchain-community==0.2.5
+langgraph==0.1.9
+tiktoken==0.7.0
+
+# ─── Document Parsing (no system deps) ─────────────────────────────────────
+pypdf2==3.0.1
+python-docx==1.1.2
+openpyxl==3.1.4
+pillow==10.4.0
+
+# ─── Auth / Security ────────────────────────────────────────────────────────
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 cryptography==42.0.8
 
+# ─── HTTP Client ────────────────────────────────────────────────────────────
+httpx==0.27.0
+aiofiles==23.2.1
+
+# ─── Validation ─────────────────────────────────────────────────────────────
 pydantic==2.7.3
 pydantic-settings==2.3.4
 email-validator==2.2.0
 
-httpx==0.27.0
-aiofiles==23.2.1
-
-python-dotenv==1.0.1
-structlog==24.2.0
-python-slugify==8.0.4
-shortuuid==1.0.13
-ujson==5.10.0
+# ─── Templating ─────────────────────────────────────────────────────────────
 jinja2==3.1.4
 
+# ─── Utilities ──────────────────────────────────────────────────────────────
+python-dotenv==1.0.1
+structlog==24.2.0
+tenacity==8.4.1
+pyyaml==6.0.1
+ujson==5.10.0
+python-slugify==8.0.4
+shortuuid==1.0.13
+
+# ─── Testing ────────────────────────────────────────────────────────────────
 pytest==8.2.2
 pytest-asyncio==0.23.7
 pytest-cov==5.0.0
