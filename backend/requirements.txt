@@ -18,7 +18,7 @@ flower==2.0.1
 # ─── AI / LLM ──────────────────────────────────────────────────────────────────
 anthropic==0.40.0
 openai==1.40.0
-langchain==0.2.16
+langchain==0.2.17
 langchain-anthropic==0.1.23
 langchain-openai==0.1.25
 langchain-community==0.2.19
