@@ -148,7 +148,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ENVIRONMENT: development
           CORS_ORIGINS: http://localhost:3000
-        run: python start_ci.py &
+        run: python start_ci.py > /tmp/uvicorn.log 2>&1 &
 
       - name: Wait for backend to be healthy
         run: |
@@ -163,6 +163,8 @@ jobs:
             sleep 5
           done
           if [ "$BACKEND_UP" = "false" ]; then
+            echo "=== uvicorn startup log ==="
+            cat /tmp/uvicorn.log || echo "(no log found)"
             echo "ERROR: backend did not start within 150s"
             exit 1
           fi
