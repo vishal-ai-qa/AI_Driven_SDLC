@@ -15,8 +15,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright Chromium + its system deps in a single layer so
-# apt-get update runs before playwright's own apt-get install call.
+# Install Playwright Chromium + its system deps.
+# Run apt-get update first so playwright's --with-deps apt-get install succeeds.
+# playwright 1.49+ knows Debian Bookworm (python:3.12-slim base) package names.
 RUN apt-get update \
     && playwright install chromium --with-deps \
     && rm -rf /var/lib/apt/lists/*
