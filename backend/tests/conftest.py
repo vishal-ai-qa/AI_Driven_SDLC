@@ -48,6 +48,7 @@ _anthropic_mock.AsyncAnthropic = MagicMock(return_value=MagicMock())
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from app.main import app
@@ -69,6 +70,7 @@ def event_loop():
 @pytest_asyncio.fixture(scope="session")
 async def setup_db():
     async with test_engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with test_engine.begin() as conn:
